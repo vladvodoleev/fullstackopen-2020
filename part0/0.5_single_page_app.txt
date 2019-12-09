@@ -1,0 +1,21 @@
+browser->server: HTTP GET https://fullstack-exampleapp.herokuapp.com/spa
+server-->browser: HTTP status 200, HTML code
+
+browser->server: HTTP GET https://fullstack-exampleapp.herokuapp.com/main.css
+server-->browser: HTTP status 200, main.css
+
+browser->server: HTTP GET https://fullstack-exampleapp.herokuapp.com/spa.js
+server-->browser: HTTP status 200, spa.js
+
+note over browser:
+browser executes spa.js
+that requests JSON data from server
+end note
+
+browser->server: HTTP GET https://fullstack-exampleapp.herokuapp.com/data.json
+server-->browser: HTTP status 200, data.json
+
+note over browser:
+browser executes the event handler
+that renders notes to display
+end note

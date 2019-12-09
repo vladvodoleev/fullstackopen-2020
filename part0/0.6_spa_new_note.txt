@@ -1,0 +1,6 @@
+note over browser:
+user types text in textbox and presses submit button
+end note
+
+browser->server: HTTP POST https://fullstack-exampleapp.herokuapp.com/new_note_spa
+server->>browser: HTTP status 201 Created
