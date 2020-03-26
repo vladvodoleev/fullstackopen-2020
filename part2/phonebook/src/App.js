@@ -1,15 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Filter from "./components/Filter";
+import PersonForm from "./components/PersonForm";
+import Persons from "./components/Persons";
+import phoneService from "./services/phonebook";
+import Notification from "./components/Notification";
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456" },
-    { name: "Ada Lovelace", number: "39-44-5323523" },
-    { name: "Dan Abramov", number: "12-43-234345" },
-    { name: "Mary Poppendieck", number: "39-23-6423122" }
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filterWord, setFilterWord] = useState("");
+  const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    phoneService.getAll().then(persons => setPersons(persons));
+  }, []);
+
+  const generateNewIdGenerator = () => {
+    let counter = persons.length;
+    return () => ++counter;
+  };
+
+  const newIdGenerator = generateNewIdGenerator();
 
   const handleNameChange = event => setNewName(event.target.value);
 
@@ -17,14 +29,52 @@ const App = () => {
 
   const handleFilterChange = event => setFilterWord(event.target.value);
 
+  const updateNotification = message => {
+    setNotification(message);
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleDeletePerson = id => {
+    const personToDelete = persons.find(person => person.id === id);
+    const result = window.confirm(`Delete ${personToDelete.name}`);
+    if (result) {
+      phoneService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id));
+        })
+        .catch(error => {
+          updateNotification({text: `Information of ${personToDelete.name} has already been removed from server`, type: "error"});
+          setPersons(persons.filter(person => person.id !== personToDelete.id));
+        });
+    }
+  };
+
   const addPerson = event => {
     event.preventDefault();
-    let newPerson = { name: newName, number: newNumber };
-    const indexOfNewName = persons.map(person => person.name).indexOf(newName);
-    if (indexOfNewName === -1) {
-      setPersons(persons.concat(newPerson));
+    const personIdx = persons.map(person => person.name).indexOf(newName);
+    if (personIdx === -1) {
+      let id = newIdGenerator();
+      const newPerson = { name: newName, number: newNumber, id: id };
+      phoneService.create(newPerson).then(newEntry => {
+        updateNotification({text: `Added ${newEntry.name}`, type: "success"});
+        setPersons(persons.concat(newEntry));
+      });
     } else {
-      alert(`${newName} is already added to phonebook`);
+      const result = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      );
+      if (result) {
+        const newPerson = { ...persons[personIdx], number: newNumber };
+        phoneService.update(newPerson).then(newEntry => {
+          updateNotification({text: `Updated ${newEntry.name} number`, type: "success"});
+          setPersons(
+            persons.map(person =>
+              person.id === newPerson.id ? newEntry : person
+            )
+          );
+        });
+      }
     }
     setNewName("");
     setNewNumber("");
@@ -37,27 +87,21 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <div>
-        <p>filter shown with</p>
-        <input value={filterWord} onChange={handleFilterChange} />
-      </div>
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-          phone: <input value={newNumber} onChange={handleNumberChange} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-      <h2>Numbers</h2>
-      {personsToShow.map(person => (
-        <p key={person.name}>
-          {person.name} {person.number}
-        </p>
-      ))}
+      <Notification message={notification} />
+      <Filter filterWord={filterWord} handleFilterChange={handleFilterChange} />
+      <h2>Add a new</h2>
+      <PersonForm
+        addPerson={addPerson}
+        newName={newName}
+        handleNameChange={handleNameChange}
+        newNumber={newNumber}
+        handleNumberChange={handleNumberChange}
+      />
+      <h3>Numbers</h3>
+      <Persons
+        persons={personsToShow}
+        handleDeletePerson={handleDeletePerson}
+      />
     </div>
   );
 };
