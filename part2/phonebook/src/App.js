@@ -54,8 +54,7 @@ const App = () => {
     event.preventDefault();
     const personIdx = persons.map(person => person.name).indexOf(newName);
     if (personIdx === -1) {
-      let id = newIdGenerator();
-      const newPerson = { name: newName, number: newNumber, id: id };
+      const newPerson = { name: newName, number: newNumber};
       phoneService.create(newPerson).then(newEntry => {
         updateNotification({text: `Added ${newEntry.name}`, type: "success"});
         setPersons(persons.concat(newEntry));
