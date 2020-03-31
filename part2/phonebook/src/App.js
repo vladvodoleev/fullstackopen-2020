@@ -16,13 +16,6 @@ const App = () => {
     phoneService.getAll().then(persons => setPersons(persons));
   }, []);
 
-  const generateNewIdGenerator = () => {
-    let counter = persons.length;
-    return () => ++counter;
-  };
-
-  const newIdGenerator = generateNewIdGenerator();
-
   const handleNameChange = event => setNewName(event.target.value);
 
   const handleNumberChange = event => setNewNumber(event.target.value);
@@ -55,25 +48,34 @@ const App = () => {
     const personIdx = persons.map(person => person.name).indexOf(newName);
     if (personIdx === -1) {
       const newPerson = { name: newName, number: newNumber};
-      phoneService.create(newPerson).then(newEntry => {
-        updateNotification({text: `Added ${newEntry.name}`, type: "success"});
-        setPersons(persons.concat(newEntry));
-      });
+      phoneService
+      .create(newPerson)
+        .then(newEntry => {
+          updateNotification({text: `Added ${newEntry.name}`, type: "success"});
+          setPersons(persons.concat(newEntry));
+        })
+        .catch(error => {
+          updateNotification({text: error.response.data.error, type: "error"})
+        });
     } else {
       const result = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
       );
       if (result) {
         const newPerson = { ...persons[personIdx], number: newNumber };
-        phoneService.update(newPerson).then(newEntry => {
-          updateNotification({text: `Updated ${newEntry.name} number`, type: "success"});
-          setPersons(
-            persons.map(person =>
-              person.id === newPerson.id ? newEntry : person
-            )
-          );
-        });
-        console.log(persons);
+        phoneService
+          .update(newPerson)
+          .then(newEntry => {
+            updateNotification({text: `Updated ${newEntry.name} number`, type: "success"});
+            setPersons(
+              persons.map(person =>
+                person.id === newPerson.id ? newEntry : person
+              )
+            );
+          })
+          .catch(error => {
+            updateNotification({text: error.response.data.error, type: "error"})
+          });
       }
     }
     setNewName("");
