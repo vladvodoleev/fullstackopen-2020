@@ -3,15 +3,31 @@ const supertest = require("supertest");
 const app = require("../app");
 const api = supertest(app);
 const Blog = require("../models/blog");
+const User = require("../models/user");
 const helper = require("./test_helper");
 const { blogs } = helper;
 
+const testUser = {
+  username: "testuser123",
+  name: "OwOcat",
+  password: "1234"
+};
+
+let testToken;
+
 beforeEach(async () => {
   await Blog.deleteMany({});
+  await User.deleteMany({});
 
   const blogObjects = blogs.map(note => new Blog(note));
   const promiseArray = blogObjects.map(blog => blog.save());
   await Promise.all(promiseArray);
+
+  const savedUser = await api.post("/api/users").send(testUser);
+
+  const loggedinUser = await api.post("/api/login").send(testUser);
+
+  testToken = loggedinUser.body.token
 });
 
 test("all blogs are returned as json", async () => {
@@ -35,7 +51,7 @@ test("a new blog is added to the list", async () => {
     url: "https://randomstuff.com/",
     likes: 7
   };
-  const postResponse = await api.post("/api/blogs").send(testBlog);
+  const postResponse = await api.post("/api/blogs").set("Authorization", testToken).send(testBlog);
   const addedBlog = postResponse.body;
 
   expect(addedBlog.title).toBe(testBlog.title);
