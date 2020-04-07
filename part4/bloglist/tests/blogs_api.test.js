@@ -5,12 +5,13 @@ const api = supertest(app);
 const Blog = require("../models/blog");
 const User = require("../models/user");
 const helper = require("./test_helper");
+const jwt = require("jsonwebtoken");
 const { blogs } = helper;
 
 const testUser = {
   username: "testuser123",
   name: "OwOcat",
-  password: "1234"
+  password: "1234",
 };
 
 let testToken;
@@ -19,15 +20,15 @@ beforeEach(async () => {
   await Blog.deleteMany({});
   await User.deleteMany({});
 
-  const blogObjects = blogs.map(note => new Blog(note));
-  const promiseArray = blogObjects.map(blog => blog.save());
+  const blogObjects = blogs.map((note) => new Blog(note));
+  const promiseArray = blogObjects.map((blog) => blog.save());
   await Promise.all(promiseArray);
 
   const savedUser = await api.post("/api/users").send(testUser);
 
   const loggedinUser = await api.post("/api/login").send(testUser);
 
-  testToken = loggedinUser.body.token
+  testToken = loggedinUser.body.token;
 });
 
 test("all blogs are returned as json", async () => {
@@ -49,9 +50,12 @@ test("a new blog is added to the list", async () => {
     title: "Random stuff",
     author: "Me",
     url: "https://randomstuff.com/",
-    likes: 7
+    likes: 7,
   };
-  const postResponse = await api.post("/api/blogs").set("Authorization", testToken).send(testBlog);
+  const postResponse = await api
+    .post("/api/blogs")
+    .set("Authorization", `bearer ${testToken}`)
+    .send(testBlog);
   const addedBlog = postResponse.body;
 
   expect(addedBlog.title).toBe(testBlog.title);
@@ -71,18 +75,49 @@ test("if likes are missing from request, default value to 0", async () => {
     url: "https://randomstuff.com/",
   };
 
-  const postResponse = await api.post("/api/blogs").send(likeslessBlog);
+  const postResponse = await api
+    .post("/api/blogs")
+    .set("Authorization", `bearer ${testToken}`)
+    .send(likeslessBlog);
   expect(postResponse.body.likes).toBeDefined();
   expect(postResponse.body.likes).toBe(0);
-})
+});
 
 test("returns 400 error code when both url and title are missing", async () => {
   const testBlog = {
-    author: "Me"
+    author: "Me",
   };
-  const response = await api.post("/api/blogs").send(testBlog);
-  expect(response.status).toBe(400);
-})
+  const response = await api
+    .post("/api/blogs")
+    .set("Authorization", `bearer ${testToken}`)
+    .send(testBlog)
+    .expect(400);
+});
+
+test("return 401 error code when token is not provided", async () => {
+  const testBlog = {
+    title: "Random stuff",
+    author: "Me",
+    url: "https://randomstuff.com/",
+    likes: 7,
+  };
+  const response = await api.post("/api/blogs").send(testBlog).expect(401);
+});
+
+test("return 401 error code when token is non valid", async () => {
+  const testBlog = {
+    title: "Random stuff",
+    author: "Me",
+    url: "https://randomstuff.com/",
+    likes: 7,
+  };
+  const invalidToken = jwt.sign("123456789123123", process.env.SECRET);
+  const response = await api
+    .post("/api/blogs")
+    .set("Authorization", `bearer ${invalidToken}`)
+    .send(testBlog)
+    .expect(401);
+});
 
 afterAll(() => {
   mongoose.connection.close();
