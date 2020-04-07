@@ -27,8 +27,8 @@ blogsRouter.post("/", async (request, response) => {
     body.likes = 0;
   }
 
-  if (!body.hasOwnProperty("title") && !body.hasOwnProperty("url")) {
-    response.status(400).end();
+  if (!body.title && !body.url) {
+    return response.status(400).json({ error: "title and url are missing"});
   } else {
     const newBlog = {
       title: body.title,
