@@ -12,12 +12,23 @@ const setToken = newToken => {
   token = `bearer ${newToken}`
 }
 
+const getAuthConfig = () => {
+  return {headers: {Authorization: token}}
+}
+
 const create = async newBlog => {
-  const config = {
-    headers: {Authorization: token}
-  }
-  const response = await axios.post(baseUrl, newBlog, config)
+  const response = await axios.post(baseUrl, newBlog, getAuthConfig())
   return response.data
 }
 
-export default { getAll, setToken, create }
+const updateBlog = async (newBlog, id) => {
+  const response = await axios.put(`${baseUrl}/${id}`, newBlog, getAuthConfig())
+  return response.data
+}
+
+const deleteBlog = async id => {
+  const response = await axios.delete(`${baseUrl}/${id}`, getAuthConfig())
+  return response.data
+}
+
+export default { getAll, setToken, create, updateBlog, deleteBlog }

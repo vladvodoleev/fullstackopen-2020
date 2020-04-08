@@ -38,6 +38,7 @@ blogsRouter.post("/", async (request, response) => {
       user: user._id,
     };
     const savedBlog = await new Blog(newBlog).save();
+    savedBLog = savedBlog.populate("user", { username: 1, name: 1 })
     user.blogs = user.blogs.concat(savedBlog._id);
     await user.save();
 
@@ -46,6 +47,7 @@ blogsRouter.post("/", async (request, response) => {
 });
 
 blogsRouter.delete("/:id", async (request, response) => {
+  console.log(request.token)
   const decodedToken = jwt.verify(request.token, process.env.SECRET);
   if (!request.token || !decodedToken.id) {
     return response.status(401).json({ error: "token missing or invalid" });
@@ -62,13 +64,17 @@ blogsRouter.delete("/:id", async (request, response) => {
 });
 
 blogsRouter.put("/:id", async (request, response, next) => {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
+  if (!request.token || !decodedToken.id) {
+    return response.status(401).json({ error: "token missing or invalid" });
+  }
   const body = request.body;
 
   try {
     const addedBlog = await Blog.findByIdAndUpdate(request.params.id, body, {
       new: true,
-    });
-    response.json(addedBlog.toJSON());
+    }).populate("user", { username: 1, name: 1 });
+    return response.json(addedBlog.toJSON());
   } catch (error) {
     next(error);
   }
