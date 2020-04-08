@@ -13,7 +13,7 @@ const setToken = newToken => {
 }
 
 const getAuthConfig = () => {
-  return {headers: {Authorization: token}}
+  return { headers: { Authorization: token } }
 }
 
 const create = async newBlog => {

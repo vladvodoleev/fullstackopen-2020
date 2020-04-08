@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 
 const Blog = ({ blog, likeBlog, removeBlog, user }) => {
   const [showFullInfo, setShowFullInfo] = useState(false)
@@ -37,19 +37,19 @@ const Blog = ({ blog, likeBlog, removeBlog, user }) => {
         {blog.title} {blog.author}
         <button onClick={() => setShowFullInfo(!showFullInfo)}>view</button>
       </div>
-      {showFullInfo ? 
+      {showFullInfo ?
         (<>
           <div>{blog.url}</div>
           <div>likes {blog.likes} <button onClick={handleLike}>like</button></div>
-          {blog.user ? <div>{blog.user.name}</div> 
-          : null}
-          {compareUsers() ? 
-            <button onClick={handleRemove}>remove</button> : 
+          {blog.user ? <div>{blog.user.name}</div>
+            : null}
+          {compareUsers() ?
+            <button onClick={handleRemove}>remove</button> :
             null
           }
         </>) :
         null}
-      
+
     </div>
   )
 }

@@ -19,11 +19,11 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
 
   useEffect(() => {
-    const loggedUser = window.localStorage.getItem("loggedUser")
+    const loggedUser = window.localStorage.getItem('loggedUser')
     if (loggedUser) {
       const user = JSON.parse(loggedUser)
       setUser(user)
@@ -36,9 +36,9 @@ const App = () => {
     try {
       const blog = await blogService.create(blogObject)
       setBlogs([...blogs].concat(blog))
-      updateNotification({type: 'success', text: `a new blog ${blog.title} by ${blog.author} added`})
+      updateNotification({ type: 'success', text: `a new blog ${blog.title} by ${blog.author} added` })
     } catch(error) {
-      updateNotification({type: 'error', text: error.response.data.error})
+      updateNotification({ type: 'error', text: error.response.data.error })
     }
   }
 
@@ -46,9 +46,9 @@ const App = () => {
     try {
       const updBlog = await blogService.updateBlog(blog, id)
       setBlogs([...blogs].map(b => b.id === id ? updBlog : b))
-      updateNotification({type: 'success', text: `you liked ${updBlog.title}`})
+      updateNotification({ type: 'success', text: `you liked ${updBlog.title}` })
     } catch(error) {
-      updateNotification({type: 'error', text: error.response.data.error})
+      updateNotification({ type: 'error', text: error.response.data.error })
     }
   }
 
@@ -58,32 +58,32 @@ const App = () => {
       try {
         await blogService.deleteBlog(id)
         setBlogs([...blogs].filter(b => b.id !== id))
-        updateNotification({type: 'success', text: `you removed a ${blog.title}`})
+        updateNotification({ type: 'success', text: `you removed a ${blog.title}` })
       } catch(error) {
-        updateNotification({type: 'error', text: error.response.data.error})
+        updateNotification({ type: 'error', text: error.response.data.error })
       }
     }
-  } 
+  }
 
   const updateNotification = message => {
-    setNotification(message);
-    setTimeout(() => setNotification(null), 3000);
+    setNotification(message)
+    setTimeout(() => setNotification(null), 3000)
   }
 
   const loginForm = () => (
     <form onSubmit={handleLogin}>
       <div>
         username
-          <input
+        <input
           type="text"
           value={username}
           name="Username"
-          onChange = {({target}) => setUsername(target.value)}
+          onChange = {({ target }) => setUsername(target.value)}
         />
       </div>
       <div>
         password
-          <input
+        <input
           type="password"
           value={password}
           name="Password"
@@ -107,13 +107,13 @@ const App = () => {
       setUsername('')
       setPassword('')
     } catch (exception) {
-      updateNotification({type: 'error', text: 'wrong username or password'})
+      updateNotification({ type: 'error', text: 'wrong username or password' })
     }
   }
 
-  const handleLogout = event => {
-    setUser(null);
-    window.localStorage.removeItem('loggedUser');
+  const handleLogout = () => {
+    setUser(null)
+    window.localStorage.removeItem('loggedUser')
   }
 
   const sortedBlog = [...blogs].sort((a,b) => b.likes - a.likes)
@@ -135,16 +135,16 @@ const App = () => {
       <p>{user.name} logged in<button onClick={handleLogout}>logout</button></p>
       <h2>create new</h2>
       <Togglable buttonLabel='new note' ref={blogFormRef}>
-        <BlogForm 
+        <BlogForm
           createBlog={addBlog}
         />
       </Togglable>
       {sortedBlog.map(blog =>
-        <Blog 
-          key={blog.id} 
-          blog={blog} 
-          likeBlog={likeBlog} 
-          removeBlog={removeBlog} 
+        <Blog
+          key={blog.id}
+          blog={blog}
+          likeBlog={likeBlog}
+          removeBlog={removeBlog}
           user={user}
         />
       )}
