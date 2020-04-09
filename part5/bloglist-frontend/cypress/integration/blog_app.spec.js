@@ -37,12 +37,7 @@ describe('Blog app', function() {
 
     describe.only('When logged in', function() {
       beforeEach(function() {
-        cy.request('POST', 'http://localhost:3001/api/login', {
-          username: 'mluukkai', password: 'salainen'
-        }).then(response => {
-          localStorage.setItem('loggedUser', JSON.stringify(response.body))
-          cy.visit('http://localhost:3000')
-        })
+        cy.login({ username: 'mluukkai', password: 'salainen' })
       })
   
       it('A blog can be created', function() {
@@ -55,30 +50,28 @@ describe('Blog app', function() {
       })
 
       it('A blog can be liked', function() {
-        cy.contains('new note').click()
-        cy.contains('title').find('input').type('test title')
-        cy.contains('author').find('input').type('test author')
-        cy.contains('url').find('input').type('test url')
-        cy.get('.create-button').click()
+        cy.createNote({title: 'test title', author: 'test author', url: 'test url'})
         cy.contains('view').click()
         cy.contains('like').click()
         cy.contains('likes 1')
       })
 
       it('A blog can be deleted', function() {
-        cy.contains('new note').click()
-        cy.contains('title').find('input').type('test title')
-        cy.contains('author').find('input').type('test author')
-        cy.contains('url').find('input').type('test url')
-        cy.get('.create-button').click()
+        cy.createNote({title: 'test title', author: 'test author', url: 'test url'})
         cy.contains('view').click()
         cy.contains('remove').click()
         cy.contains('test title test author').should('not.exist')
       })
 
-      // it('A blog cant be delete by another user', function() {
-
-      // })
+      it('A blog cant be delete by another user', function() {
+        cy.createNote({title: 'test title', author: 'test author', url: 'test url'})
+        cy.contains('logout').click()
+        const newUser = { username: 'test123', password: 'test123' }
+        cy.request('POST', 'http://localhost:3001/api/users/', newUser)
+        cy.login(newUser)
+        cy.contains('view').click()
+        cy.contains('remove').should('not.exist')
+      })
     })
   })
 })

@@ -1,8 +1,8 @@
-Cypress.Commands.add('createNote', ({ content, important }) => {
+Cypress.Commands.add('createNote', ({ title, author, url  }) => {
   cy.request({
-    url: 'http://localhost:3001/api/notes',
+    url: 'http://localhost:3001/api/blogs',
     method: 'POST',
-    body: { content, important },
+    body: { title, author, url },
     headers: {
       'Authorization': `bearer ${JSON.parse(localStorage.getItem('loggedUser')).token}`
     }
