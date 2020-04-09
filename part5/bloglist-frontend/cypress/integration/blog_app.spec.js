@@ -39,7 +39,7 @@ describe('Blog app', function() {
       beforeEach(function() {
         cy.login({ username: 'mluukkai', password: 'salainen' })
       })
-  
+
       it('A blog can be created', function() {
         cy.contains('new note').click()
         cy.contains('title').find('input').type('test title')
@@ -50,27 +50,60 @@ describe('Blog app', function() {
       })
 
       it('A blog can be liked', function() {
-        cy.createNote({title: 'test title', author: 'test author', url: 'test url'})
+        cy.createBlog({ title: 'test title', author: 'test author', url: 'test url' })
         cy.contains('view').click()
         cy.contains('like').click()
         cy.contains('likes 1')
       })
 
       it('A blog can be deleted', function() {
-        cy.createNote({title: 'test title', author: 'test author', url: 'test url'})
+        cy.createBlog({ title: 'test title', author: 'test author', url: 'test url' })
         cy.contains('view').click()
         cy.contains('remove').click()
         cy.contains('test title test author').should('not.exist')
       })
 
       it('A blog cant be delete by another user', function() {
-        cy.createNote({title: 'test title', author: 'test author', url: 'test url'})
+        cy.createBlog({title: 'test title', author: 'test author', url: 'test url'})
         cy.contains('logout').click()
         const newUser = { username: 'test123', password: 'test123' }
         cy.request('POST', 'http://localhost:3001/api/users/', newUser)
         cy.login(newUser)
         cy.contains('view').click()
         cy.contains('remove').should('not.exist')
+      })
+
+      it.only('Blogs are sorted by like amount', function() {
+        const blogs = [
+          {
+            title: 'worst blog',
+            author: 'bad author',
+            url: '',
+            likes: 2
+          },
+          {
+            title: 'blog',
+            author: 'author',
+            url: '',
+            likes: 5
+          },
+          {
+            title: 'best blog',
+            author: 'best author',
+            url: '',
+            likes: 10
+          }
+        ]
+        const sortedBlogs = blogs.sort((a,b) => b.likes - a.likes).map(blog => `${blog.title} ${blog.author}`)
+        console.log(sortedBlogs)
+        blogs.forEach(blog => {
+          cy.createBlog(blog)
+        })
+        cy.get('.blog')
+          .then($blogs => {
+            return $blogs.map((index,html) => Cypress.$(html).text().replace('view','')).get()
+          })
+          .should('deep.eq', blogs.sort((a,b) => b.likes - a.likes).map(blog => `${blog.title} ${blog.author}`))
       })
     })
   })
