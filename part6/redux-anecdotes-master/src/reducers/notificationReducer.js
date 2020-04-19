@@ -9,16 +9,20 @@ const notificationReducer = (state = null, action) => {
   }
 };
 
-export const setNotification = (message) => {
-  return {
-    type: "SHOW",
-    data: { message },
-  };
-};
-
-export const clearNotification = () => {
-  return {
-    type: "HIDE",
+export const setNotification = (message, timeout) => {
+  console.log(message, timeout);
+  return async (dispatch) => {
+    dispatch({
+      type: "SHOW",
+      data: { message },
+    });
+    setTimeout(
+      () =>
+        dispatch({
+          type: "HIDE",
+        }),
+      timeout * 1000
+    );
   };
 };
 
