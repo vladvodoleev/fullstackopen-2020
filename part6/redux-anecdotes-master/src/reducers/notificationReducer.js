@@ -9,14 +9,18 @@ const notificationReducer = (state = null, action) => {
   }
 };
 
+let timeoutID = null;
+
 export const setNotification = (message, timeout) => {
-  console.log(message, timeout);
   return async (dispatch) => {
     dispatch({
       type: "SHOW",
       data: { message },
     });
-    setTimeout(
+
+    if (timeoutID) clearTimeout(timeoutID);
+
+    timeoutID = setTimeout(
       () =>
         dispatch({
           type: "HIDE",
