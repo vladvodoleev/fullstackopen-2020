@@ -5,8 +5,9 @@ import {
   Route,
   Link,
   useParams,
-  useHistory,
 } from "react-router-dom";
+
+import CreateNew from "./components/CreateNew";
 
 const AnecdoteList = ({ anecdotes }) => (
   <div>
@@ -70,54 +71,22 @@ const Footer = () => (
   </div>
 );
 
-const CreateNew = (props) => {
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
-  const [info, setInfo] = useState("");
-
-  const history = useHistory();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    props.addNew({
-      content,
-      author,
-      info,
-      votes: 0,
-    });
-    history.push("/");
+const Menu = () => {
+  const padding = {
+    paddingRight: 5,
   };
 
   return (
     <div>
-      <h2>create a new anecdote</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          content
-          <input
-            name="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        </div>
-        <div>
-          author
-          <input
-            name="author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
-        </div>
-        <div>
-          url for more info
-          <input
-            name="info"
-            value={info}
-            onChange={(e) => setInfo(e.target.value)}
-          />
-        </div>
-        <button>create</button>
-      </form>
+      <Link style={padding} to="/">
+        anecdotes
+      </Link>
+      <Link style={padding} to="/create">
+        create new
+      </Link>
+      <Link style={padding} to="/about">
+        about
+      </Link>
     </div>
   );
 };
@@ -139,10 +108,6 @@ const App = () => {
       id: "2",
     },
   ]);
-
-  const padding = {
-    paddingRight: 5,
-  };
 
   const [notification, setNotification] = useState("");
 
@@ -174,17 +139,7 @@ const App = () => {
     <Router>
       <div>
         <h1>Software anecdotes</h1>
-        <div>
-          <Link style={padding} to="/">
-            anecdotes
-          </Link>
-          <Link style={padding} to="/create">
-            create new
-          </Link>
-          <Link style={padding} to="/about">
-            about
-          </Link>
-        </div>
+        <Menu />
         <p>{notification}</p>
         <Switch>
           <Route path="/create">
