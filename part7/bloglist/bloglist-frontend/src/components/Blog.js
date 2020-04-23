@@ -1,19 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { updateBlog, removeBlog } from '../reducers/blogReducer';
 import { useDispatch } from 'react-redux';
 import { setNotification } from '../reducers/notificationReducer';
+import { useParams } from 'react-router-dom';
 
-const Blog = ({ blog, user }) => {
+const Blog = ({ blogs, user }) => {
   const dispatch = useDispatch();
-  const [showFullInfo, setShowFullInfo] = useState(false);
+  const id = useParams().id;
 
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: 'solid',
-    borderWidth: 1,
-    marginBottom: 5,
-  };
+  if (blogs.length === 0) return null;
+
+  const blog = blogs.find((n) => n.id === id);
 
   const handleLike = async () => {
     const newBlog = {
@@ -50,21 +47,14 @@ const Blog = ({ blog, user }) => {
   };
 
   return (
-    <div style={blogStyle} className="blog">
+    <div>
+      <h2>{blog.title}</h2>
+      <a href={blog.url}>{blog.url}</a>
       <div>
-        {blog.title} {blog.author}
-        <button onClick={() => setShowFullInfo(!showFullInfo)}>view</button>
+        likes {blog.likes} <button onClick={handleLike}>like</button>
       </div>
-      {showFullInfo ? (
-        <>
-          <div>{blog.url}</div>
-          <div>
-            likes {blog.likes} <button onClick={handleLike}>like</button>
-          </div>
-          {blog.user ? <div>{blog.user.name}</div> : null}
-          {compareUsers() ? <button onClick={handleRemove}>remove</button> : null}
-        </>
-      ) : null}
+      {blog.user ? <div>added by {blog.user.name}</div> : null}
+      {compareUsers() ? <button onClick={handleRemove}>remove</button> : null}
     </div>
   );
 };

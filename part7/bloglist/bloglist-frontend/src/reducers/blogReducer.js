@@ -17,7 +17,6 @@ const reducer = (state = [], action) => {
     }
     case REMOVE: {
       const id = action.data.id;
-      console.log(action.data);
       return state.filter((blog) => blog.id !== id);
     }
     default:

@@ -1,22 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Blog from './components/Blog';
 import { useSelector, useDispatch } from 'react-redux';
 import { initializeBlogs, addBlog } from './reducers/blogReducer';
 import { setNotification } from './reducers/notificationReducer';
-import { initializeLocalUser, login, logout } from './reducers/userReducer';
+import { initializeLocalUser, getUsers } from './reducers/userReducer';
 import BlogForm from './components/BlogForm';
 import Notification from './components/Notification';
 import Togglable from './components/Togglable';
+import LoginForm from './components/LoginForm';
+import Users from './components/Users';
+import User from './components/User';
+import NavBar from './components/NavBar';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import './index.css';
 
 const App = () => {
   const dispatch = useDispatch();
   const blogs = useSelector((state) => state.blogs).sort((a, b) => b.likes - a.likes);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state) => state.users.current);
+  const users = useSelector((state) => state.users.all);
 
   const blogFormRef = React.createRef();
+
+  const blogLinkStyle = {
+    paddingTop: 10,
+    paddingLeft: 2,
+    border: 'solid',
+    borderWidth: 1,
+    marginBottom: 5,
+  };
 
   useEffect(() => {
     dispatch(initializeBlogs());
@@ -24,6 +36,10 @@ const App = () => {
 
   useEffect(() => {
     dispatch(initializeLocalUser());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(getUsers());
   }, [dispatch]);
 
   const handleAddBlog = async (blog) => {
@@ -44,71 +60,48 @@ const App = () => {
     }
   };
 
-  const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        username
-        <input
-          type="text"
-          value={username}
-          name="Username"
-          onChange={({ target }) => setUsername(target.value)}
-        />
-      </div>
-      <div>
-        password
-        <input
-          type="password"
-          value={password}
-          name="Password"
-          onChange={({ target }) => setPassword(target.value)}
-        />
-      </div>
-      <button type="submit">login</button>
-    </form>
-  );
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
-    try {
-      await dispatch(login({ username, password }));
-    } catch (exception) {
-      dispatch(setNotification({ type: 'error', text: 'wrong username or password' }, 5));
-    } finally {
-      setUsername('');
-      setPassword('');
-    }
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
-  };
-
   if (user === null) {
     return (
       <div>
         <h2>Login to application</h2>
         <Notification />
-        {loginForm()}
+        <LoginForm />
       </div>
     );
   }
 
   return (
-    <div>
+    <Router>
+      <NavBar user={user} />
       <h2>blogs</h2>
       <Notification />
-      <p>
+      {/* <p>
         {user.name} logged in<button onClick={handleLogout}>logout</button>
-      </p>
-      <h2>create new</h2>
-      <Togglable buttonLabel="new note" ref={blogFormRef}>
-        <BlogForm createBlog={handleAddBlog} />
-      </Togglable>
-      {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} user={user} />
-      ))}
-    </div>
+      </p> */}
+      <Switch>
+        <Route path="/blogs/:id">
+          <Blog blogs={blogs} user={user} />
+        </Route>
+        <Route path="/users/:id">
+          <User users={users} />
+        </Route>
+        <Route path="/users/">
+          <Users users={users} />
+        </Route>
+        <Route path="/">
+          <h2>create new</h2>
+          <Togglable buttonLabel="new note" ref={blogFormRef}>
+            <BlogForm createBlog={handleAddBlog} />
+          </Togglable>
+          {blogs.map((blog) => (
+            // <Blog key={blog.id} blog={blog} user={user} />
+            <div key={blog.id} style={blogLinkStyle}>
+              <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+            </div>
+          ))}
+        </Route>
+      </Switch>
+    </Router>
   );
 };
 
