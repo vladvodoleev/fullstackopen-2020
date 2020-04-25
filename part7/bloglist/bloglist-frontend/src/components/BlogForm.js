@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Button } from '@material-ui/core';
 
 const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState('');
@@ -46,9 +47,9 @@ const BlogForm = ({ createBlog }) => {
           onChange={({ target }) => setUrl(target.value)}
         />
       </div>
-      <button type="submit" className="create-button">
+      <Button variant="contained" color="primary" type="submit" className="create-button">
         create
-      </button>
+      </Button>
     </form>
   );
 };

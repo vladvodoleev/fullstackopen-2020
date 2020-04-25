@@ -12,6 +12,8 @@ import Users from './components/Users';
 import User from './components/User';
 import NavBar from './components/NavBar';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import { Container, Card, Typography, Link as LinkMUI } from '@material-ui/core';
+
 import './index.css';
 
 const App = () => {
@@ -71,37 +73,43 @@ const App = () => {
   }
 
   return (
-    <Router>
-      <NavBar user={user} />
-      <h2>blogs</h2>
-      <Notification />
-      {/* <p>
+    <Container>
+      <Router>
+        <NavBar user={user} />
+        <h2>blogs</h2>
+        <Notification />
+        {/* <p>
         {user.name} logged in<button onClick={handleLogout}>logout</button>
       </p> */}
-      <Switch>
-        <Route path="/blogs/:id">
-          <Blog blogs={blogs} user={user} />
-        </Route>
-        <Route path="/users/:id">
-          <User users={users} />
-        </Route>
-        <Route path="/users/">
-          <Users users={users} />
-        </Route>
-        <Route path="/">
-          <h2>create new</h2>
-          <Togglable buttonLabel="new note" ref={blogFormRef}>
-            <BlogForm createBlog={handleAddBlog} />
-          </Togglable>
-          {blogs.map((blog) => (
-            // <Blog key={blog.id} blog={blog} user={user} />
-            <div key={blog.id} style={blogLinkStyle}>
-              <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
-            </div>
-          ))}
-        </Route>
-      </Switch>
-    </Router>
+        <Switch>
+          <Route path="/blogs/:id">
+            <Blog blogs={blogs} user={user} />
+          </Route>
+          <Route path="/users/:id">
+            <User users={users} />
+          </Route>
+          <Route path="/users/">
+            <Users users={users} />
+          </Route>
+          <Route path="/">
+            <h2>create new</h2>
+            <Togglable buttonLabel="new note" ref={blogFormRef}>
+              <BlogForm createBlog={handleAddBlog} />
+            </Togglable>
+            <Typography>
+              {blogs.map((blog) => (
+                // <Blog key={blog.id} blog={blog} user={user} />
+                <Card variant="outlined" key={blog.id}>
+                  <LinkMUI color="inherit" component={Link} to={`/blogs/${blog.id}`}>
+                    {blog.title}
+                  </LinkMUI>
+                </Card>
+              ))}
+            </Typography>
+          </Route>
+        </Switch>
+      </Router>
+    </Container>
   );
 };
 

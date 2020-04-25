@@ -4,6 +4,7 @@ import { updateBlog, removeBlog, commentBlog } from '../reducers/blogReducer';
 import { useDispatch } from 'react-redux';
 import { setNotification } from '../reducers/notificationReducer';
 import { useParams, useHistory } from 'react-router-dom';
+import { Button, Link } from '@material-ui/core';
 
 const Blog = ({ blogs, user }) => {
   const dispatch = useDispatch();
@@ -59,16 +60,25 @@ const Blog = ({ blogs, user }) => {
   return (
     <div>
       <h2>{blog.title}</h2>
-      <a href={blog.url}>{blog.url}</a>
+      <Link href={blog.url}>{blog.url}</Link>
       <div>
-        likes {blog.likes} <button onClick={handleLike}>like</button>
+        likes {blog.likes}{' '}
+        <Button variant="contained" color="primary" onClick={handleLike}>
+          like
+        </Button>
       </div>
       {blog.user ? <div>added by {blog.user.name}</div> : null}
-      {compareUsers() ? <button onClick={handleRemove}>remove</button> : null}
+      {compareUsers() ? (
+        <Button variant="contained" color="primary" onClick={handleRemove}>
+          remove
+        </Button>
+      ) : null}
       <h3>comments</h3>
       <form onSubmit={addNewComment}>
         <input {...comment} />
-        <button type="submit">add comment</button>
+        <Button variant="contained" color="primary" type="submit">
+          add comment
+        </Button>
       </form>
       <ul>
         {blog.comments.map((comment, i) => {
