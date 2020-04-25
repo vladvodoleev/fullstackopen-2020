@@ -1,12 +1,15 @@
 import React from 'react';
-import { updateBlog, removeBlog } from '../reducers/blogReducer';
+import { useField } from '../hooks/index';
+import { updateBlog, removeBlog, commentBlog } from '../reducers/blogReducer';
 import { useDispatch } from 'react-redux';
 import { setNotification } from '../reducers/notificationReducer';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 
 const Blog = ({ blogs, user }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const id = useParams().id;
+  const { reset: resetComment, ...comment } = useField('text');
 
   if (blogs.length === 0) return null;
 
@@ -33,12 +36,19 @@ const Blog = ({ blogs, user }) => {
     const result = window.confirm(`Remove blog ${blog.title} by ${blog.author}`);
     if (result) {
       try {
+        history.push('/');
         await dispatch(removeBlog(blog));
         dispatch(setNotification({ type: 'success', text: `you removed a ${blog.title} blog` }, 5));
       } catch (e) {
         dispatch(setNotification({ type: 'error', text: 'something went wrong' }, 5));
       }
     }
+  };
+
+  const addNewComment = (event) => {
+    event.preventDefault();
+    dispatch(commentBlog(comment.value, id));
+    resetComment();
   };
 
   const compareUsers = () => {
@@ -55,6 +65,16 @@ const Blog = ({ blogs, user }) => {
       </div>
       {blog.user ? <div>added by {blog.user.name}</div> : null}
       {compareUsers() ? <button onClick={handleRemove}>remove</button> : null}
+      <h3>comments</h3>
+      <form onSubmit={addNewComment}>
+        <input {...comment} />
+        <button type="submit">add comment</button>
+      </form>
+      <ul>
+        {blog.comments.map((comment, i) => {
+          return <li key={comment + i}>{comment}</li>;
+        })}
+      </ul>
     </div>
   );
 };

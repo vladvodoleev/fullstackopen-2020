@@ -8,6 +8,29 @@ blogsRouter.get("/", async (request, response) => {
   response.json(blogs);
 });
 
+blogsRouter.post("/:id/comments", async (request, response, next) => {
+  console.log("current request is", request.body);
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
+  if (!request.token || !decodedToken.id) {
+    return response.status(401).json({ error: "token missing or invalid" });
+  }
+  if (!request.body.comment)
+    return response.status(400).json({ error: "comment missing" });
+  try {
+    const blog = await Blog.findById(request.params.id);
+    blog.comments =
+      blog.comments.length !== 0
+        ? [...blog.comments, request.body.comment]
+        : [request.body.comment];
+    const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
+      new: true,
+    }).populate("user", { username: 1, name: 1 });
+    return response.json(updatedBlog.toJSON());
+  } catch (error) {
+    next(error);
+  }
+});
+
 blogsRouter.post("/", async (request, response) => {
   const body = request.body;
 
@@ -16,7 +39,7 @@ blogsRouter.post("/", async (request, response) => {
   }
 
   const decodedToken = jwt.verify(request.token, process.env.SECRET);
-  
+
   if (!decodedToken.id) {
     return response.status(401).json({ error: "token missing or invalid" });
   }
@@ -28,7 +51,7 @@ blogsRouter.post("/", async (request, response) => {
   }
 
   if (!body.title && !body.url) {
-    return response.status(400).json({ error: "title and url are missing"});
+    return response.status(400).json({ error: "title and url are missing" });
   } else {
     const newBlog = {
       title: body.title,
@@ -38,7 +61,9 @@ blogsRouter.post("/", async (request, response) => {
       user: user._id,
     };
     const savedBlog = await new Blog(newBlog).save();
-    const populatedBlog = await savedBlog.populate("user", { username: 1, name: 1 }).execPopulate();
+    const populatedBlog = await savedBlog
+      .populate("user", { username: 1, name: 1 })
+      .execPopulate();
     user.blogs = user.blogs.concat(savedBlog._id);
     await user.save();
 
