@@ -9,7 +9,6 @@ blogsRouter.get("/", async (request, response) => {
 });
 
 blogsRouter.post("/:id/comments", async (request, response, next) => {
-  console.log("current request is", request.body);
   const decodedToken = jwt.verify(request.token, process.env.SECRET);
   if (!request.token || !decodedToken.id) {
     return response.status(401).json({ error: "token missing or invalid" });
